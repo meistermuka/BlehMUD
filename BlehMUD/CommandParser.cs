@@ -18,29 +18,37 @@ namespace BlehMUD
             _commands = new Dictionary<string, ICommand>
             {
                 {"look", new LookCommand() },
-                {"l", new LookCommand() }
+                {"l", new LookCommand() },
+                {"quit", new QuitCommand() }
             };
         }
 
         public string ParseAndExecute(string input)
         {
-            string[] parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            string commandName = parts[0].ToLower();
-
-            if (_commands.TryGetValue(commandName, out ICommand command))
+            if(!string.IsNullOrWhiteSpace(input))
             {
-                string[] args = parts.Skip(1).ToArray();
-                return command.Execute(args);
-            }
+                string[] parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                string commandName = parts[0].ToLower();
 
-            List<string> suggestions = GetCommandSuggestions(commandName);
-            if (suggestions.Count > 0)
+                if (_commands.TryGetValue(commandName, out ICommand command))
+                {
+                    string[] args = parts.Skip(1).ToArray();
+                    return command.Execute(args);
+                }
+
+                List<string> suggestions = GetCommandSuggestions(commandName);
+                if (suggestions.Count > 0)
+                {
+                    string suggestionText = string.Join(", ", suggestions);
+                    return $"Command not recognized. Did you mean: {suggestionText}?\r\n";
+                }
+
+                return "Command not recognized.\r\n";
+            }
+            else
             {
-                string suggestionText = string.Join(", ", suggestions);
-                return $"Command not recognized. Did you mean: {suggestionText}?\r\n";
+                return string.Empty;
             }
-
-            return "Command not recognized.\r\n";
         }
 
         private List<string> GetCommandSuggestions(string input)
