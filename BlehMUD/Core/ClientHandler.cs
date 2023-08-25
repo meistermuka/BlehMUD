@@ -1,4 +1,6 @@
-﻿using BlehMUD.Entities;
+﻿using BlehMUD.Constants;
+using BlehMUD.Entities;
+using BlehMUD.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,12 +16,17 @@ namespace BlehMUD.Core
         private NetworkStream _stream;
         private Player _player;
         private readonly CommandParser _parser;
+        private string _clientId;
 
         public ClientHandler(TcpClient client, CommandParser parser)
         {
             _client = client;
             _parser = parser;
+            _clientId = Guid.NewGuid().ToString();
         }
+
+        public string GetClientId()
+        { return _clientId; }
 
         public async Task HandleClientAsync()
         {
@@ -54,7 +61,7 @@ namespace BlehMUD.Core
                             _client.Close();
                             break;
                         }
-                        string response = _parser.ParseAndExecute(command);//ProcessInput(input);
+                        string response = _parser.ParseAndExecute(command);
                         await SendToClientAsync(response);
                         await SendPrompt();
                         receivedData = string.Empty;
@@ -74,8 +81,9 @@ namespace BlehMUD.Core
 
         public async Task SendWelcomeMsg()
         {
-            string welcomeMsg = "Welcome to BlehMUD!\r\n";
-            await SendToClientAsync(welcomeMsg);
+            //string welcomeMsg = "========================================================================================================================\r\n";   
+            await SendToClientAsync(TextHelpers.ColourizeText(CoreConstants.INITPROMPT));
+            
         }
 
         public async Task SendPrompt()
@@ -91,7 +99,7 @@ namespace BlehMUD.Core
             return Encoding.ASCII.GetString(buffer, 0, bytesRead);
         }
 
-        private async Task SendToClientAsync(string msg)
+        public async Task SendToClientAsync(string msg)
         {
             byte[] messageBytes = Encoding.UTF8.GetBytes(msg);
             await _stream.WriteAsync(messageBytes, 0, messageBytes.Length);

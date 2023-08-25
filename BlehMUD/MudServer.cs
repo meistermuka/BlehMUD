@@ -1,4 +1,5 @@
-﻿using BlehMUD.Core;
+﻿using BlehMUD.Constants;
+using BlehMUD.Core;
 using BlehMUD.Entities;
 using System.Net;
 using System.Net.Sockets;
@@ -16,13 +17,14 @@ public class MudServer
     private readonly List<Player> _players = new List<Player>();
     private readonly List<NPC> _npcs = new List<NPC>();
     private readonly List<Room> _rooms = new List<Room>();
+    private Dictionary<string, List<ClientHandler>> _clientsByHost = new Dictionary<string, List<ClientHandler>>();
 
     public MudServer(IPAddress address, int port, CommandParser parser)
     {
         _listener = new TcpListener(address, port);
         _parser = parser;
-        //_tickSystem = new TickSystem(tickIntervalMilliseconds: 1000);
-        //_tickSystem.Tick += OnTick;
+        _tickSystem = new TickSystem(tickIntervalMilliseconds: CoreConstants.TICKINTERVALMS);
+        _tickSystem.Tick += OnTick;
     }
 
     private void OnTick(object sender, EventArgs e)
@@ -30,7 +32,8 @@ public class MudServer
         foreach(Player p in _players)
         {
             Console.WriteLine("Looping through players!");
-            //SendResponseToClient(p, "Tick!\n\r");
+            string clientHost = ((IPEndPoint)p.Client.Client.RemoteEndPoint).Address.ToString();
+            SendMessageToHost(clientHost, "Tick!\r\n");
         }
         Console.WriteLine("Server Tick!");
     }
@@ -45,7 +48,28 @@ public class MudServer
             TcpClient client = await _listener.AcceptTcpClientAsync();
             Console.WriteLine($"Client connected: {client.Client.RemoteEndPoint}");
             ClientHandler clientHandler = new(client, _parser);
-            _ = clientHandler.HandleClientAsync();
+            string clientHost = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
+            if(!_clientsByHost.ContainsKey(clientHost))
+            {
+                _clientsByHost.Add(clientHost, new List<ClientHandler>());
+            }
+            _clientsByHost[clientHost].Add(clientHandler);
+            _players.Add(new Player
+            {
+                Client = client
+            });
+            await clientHandler.HandleClientAsync();
+        }
+    }
+
+    public async Task SendMessageToHost(string host, string message)
+    {
+        if(_clientsByHost.ContainsKey(host))
+        {
+            foreach (var clientHandler in _clientsByHost[host])
+            {
+                await clientHandler.SendToClientAsync(message);
+            }
         }
     }
 
@@ -58,16 +82,8 @@ public class MudServer
     {
         try
         {
-            using (NetworkStream stream = player.Client.GetStream())
-            {
-                byte[] promptBytes = Encoding.ASCII.GetBytes("> ");
-                //await stream.WriteAsync(promptBytes, 0, promptBytes.Length);
-
-                byte[] responseBytes = Encoding.ASCII.GetBytes(response);
-                stream.Write(responseBytes, 0, responseBytes.Length);
-
-                stream.Write(promptBytes, 0, promptBytes.Length);
-            }
+            byte[] responseBytes = Encoding.ASCII.GetBytes(response);
+            player.Client.GetStream().Write(responseBytes, 0, responseBytes.Length);   
         } 
         catch (Exception ex)
         {
