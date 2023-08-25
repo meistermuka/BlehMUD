@@ -21,15 +21,16 @@ public class MudServer
     {
         _listener = new TcpListener(address, port);
         _parser = parser;
-        _tickSystem = new TickSystem(tickIntervalMilliseconds: 1000);
-        _tickSystem.Tick += OnTick;
+        //_tickSystem = new TickSystem(tickIntervalMilliseconds: 1000);
+        //_tickSystem.Tick += OnTick;
     }
 
-    private async void OnTick(object sender, EventArgs e)
+    private void OnTick(object sender, EventArgs e)
     {
         foreach(Player p in _players)
         {
-            await SendResponseToClient(p, "Tick!");
+            Console.WriteLine("Looping through players!");
+            //SendResponseToClient(p, "Tick!\n\r");
         }
         Console.WriteLine("Server Tick!");
     }
@@ -43,12 +44,8 @@ public class MudServer
         {
             TcpClient client = await _listener.AcceptTcpClientAsync();
             Console.WriteLine($"Client connected: {client.Client.RemoteEndPoint}");
-            Player newPlayer = new()
-            {
-                Client = client,
-            };
-            _players.Add(newPlayer);
-            await HandleClientAsync(client);
+            ClientHandler clientHandler = new(client, _parser);
+            _ = clientHandler.HandleClientAsync();
         }
     }
 
@@ -57,24 +54,19 @@ public class MudServer
         return _players.FirstOrDefault(player => player.Client == client);
     }
 
-    /*private string ProcessPlayerInput(Player player, string input)
-    {
-
-    }*/
-
-    private async Task SendResponseToClient(Player player, string response)
+    private void SendResponseToClient(Player player, string response)
     {
         try
         {
             using (NetworkStream stream = player.Client.GetStream())
             {
                 byte[] promptBytes = Encoding.ASCII.GetBytes("> ");
-                await stream.WriteAsync(promptBytes, 0, promptBytes.Length);
+                //await stream.WriteAsync(promptBytes, 0, promptBytes.Length);
 
                 byte[] responseBytes = Encoding.ASCII.GetBytes(response);
-                await stream.WriteAsync(responseBytes, 0, responseBytes.Length);
+                stream.Write(responseBytes, 0, responseBytes.Length);
 
-                await stream.WriteAsync(promptBytes, 0, promptBytes.Length);
+                stream.Write(promptBytes, 0, promptBytes.Length);
             }
         } 
         catch (Exception ex)
@@ -84,19 +76,20 @@ public class MudServer
         
     }
 
-    private async Task HandleClientAsync(TcpClient client)
+    private void HandleClientAsync(TcpClient client)
     {
-        using (NetworkStream stream = client.GetStream())
+        try
         {
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            string receivedData = string.Empty;
-
-            try
+            using (NetworkStream stream = client.GetStream())
             {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                string receivedData = string.Empty;
+
                 while (true)
                 {
-                    bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+                    Console.WriteLine($"====== buffer: {buffer}");
+                    bytesRead = stream.Read(buffer, 0, buffer.Length);
                     string data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
                     receivedData += data;
 
@@ -106,7 +99,7 @@ public class MudServer
                         string command = receivedData.Trim();
                         if (command.ToLower() == "quit")
                         {
-                            Console.WriteLine($"Client connected: {client.Client.RemoteEndPoint}");
+                            Console.WriteLine($"Client disconnected: {client.Client.RemoteEndPoint}");
                             client.Close();
                             return;
                         }
@@ -114,17 +107,17 @@ public class MudServer
                         Player player = GetPlayerByClient(client);
                         if (player != null)
                         {
-                            await SendResponseToClient(player, response);
+                            SendResponseToClient(player, response);
                         }
                         // Clear received data for the next command
                         receivedData = string.Empty;
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception: {ex}");
         }
     }
 }
