@@ -10,8 +10,13 @@ namespace BlehMUD.Entities
     {
         public string Name { get; set; }
         public string Description { get; set; }
-        public Dictionary<string, Room> ConnectedRooms { get; } = new Dictionary<string, Room>();
+        public Dictionary<string, Room> Exits { get; } = new Dictionary<string, Room>();
         public List<NPC> NPCs { get; } = new List<NPC>();
+
+        public Room(string name, string description) {
+            Name = name;
+            Description = description;
+        }
 
         public string GetFullDescription()
         {

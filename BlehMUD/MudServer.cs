@@ -13,6 +13,7 @@ public class MudServer
     private TcpListener _listener;
     private readonly CommandParser _parser;
     private readonly TickSystem _tickSystem;
+    private RoomManager _roomManager;
 
     private readonly List<Player> _players = new List<Player>();
     private readonly List<NPC> _npcs = new List<NPC>();
@@ -23,6 +24,8 @@ public class MudServer
     {
         _listener = new TcpListener(address, port);
         _parser = parser;
+        _roomManager = new RoomManager();
+        SetupRooms();
         _tickSystem = new TickSystem(tickIntervalMilliseconds: CoreConstants.TICKINTERVALMS);
         _tickSystem.Tick += OnTick;
     }
@@ -92,48 +95,29 @@ public class MudServer
         
     }
 
-    private void HandleClientAsync(TcpClient client)
+    public void SetupRooms()
     {
-        try
-        {
-            using (NetworkStream stream = client.GetStream())
-            {
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                string receivedData = string.Empty;
+        Room room1 = new("Room 1", "Room 1 description");
+        Room room2 = new("Room 2", "Room 2 description");
+        Room room3 = new("Room 3", "Room 3 description");
 
-                while (true)
-                {
-                    Console.WriteLine($"====== buffer: {buffer}");
-                    bytesRead = stream.Read(buffer, 0, buffer.Length);
-                    string data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                    receivedData += data;
+        room1.Exits["north"] = room2;
+        room2.Exits["south"] = room1;
+        room2.Exits["up"] = room3;
+        room3.Exits["down"] = room2;
 
-                    // Check if the received data ends with CRLF
-                    if (receivedData.EndsWith("\r\n"))
-                    {
-                        string command = receivedData.Trim();
-                        if (command.ToLower() == "quit")
-                        {
-                            Console.WriteLine($"Client disconnected: {client.Client.RemoteEndPoint}");
-                            client.Close();
-                            return;
-                        }
-                        string response = _parser.ParseAndExecute(command);
-                        Player player = GetPlayerByClient(client);
-                        if (player != null)
-                        {
-                            SendResponseToClient(player, response);
-                        }
-                        // Clear received data for the next command
-                        receivedData = string.Empty;
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
+        _roomManager.AddRoom(room1);
+        _roomManager.AddRoom(room2);
+        _roomManager.AddRoom(room3);
+    }
+
+    public string MovePlayer(Player player, string direction) {
+        if(player.CurrentRoom.Exits.TryGetValue(direction.ToLower(), out Room newRoom))
         {
-            Console.WriteLine($"Exception: {ex}");
+            player.CurrentRoom = newRoom;
+            return player.CurrentRoom.Description;
         }
+
+        return "You cannot go that way!\r\n";
     }
 }

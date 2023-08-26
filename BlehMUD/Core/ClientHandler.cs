@@ -38,6 +38,7 @@ namespace BlehMUD.Core
                 string receivedData = string.Empty;
 
                 await SendWelcomeMsg();
+                await SendPrompt();
                 while(true)
                 {
                     int bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length);
@@ -61,6 +62,11 @@ namespace BlehMUD.Core
                             _client.Close();
                             break;
                         }
+
+                        if (command.ToLower() == "west")
+                        {
+
+                        }
                         string response = _parser.ParseAndExecute(command);
                         await SendToClientAsync(response);
                         await SendPrompt();
@@ -82,7 +88,7 @@ namespace BlehMUD.Core
         public async Task SendWelcomeMsg()
         {
             //string welcomeMsg = "========================================================================================================================\r\n";   
-            await SendToClientAsync(TextHelpers.ColourizeText(CoreConstants.INITPROMPT));
+            await SendToClientAsync(TextHelpers.ColourizeText(CoreConstants.INITPROMPT) + "\r\n");
             
         }
 
