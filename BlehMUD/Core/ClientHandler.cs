@@ -1,4 +1,5 @@
-﻿using BlehMUD.Constants;
+﻿using BlehMUD.Commands;
+using BlehMUD.Constants;
 using BlehMUD.Entities;
 using BlehMUD.Helpers;
 using System;
@@ -18,10 +19,11 @@ namespace BlehMUD.Core
         private readonly CommandParser _parser;
         private string _clientId;
 
-        public ClientHandler(TcpClient client, CommandParser parser)
+        public ClientHandler(TcpClient client, CommandParser parser, Player player)
         {
             _client = client;
             _parser = parser;
+            _player = player;
             _clientId = Guid.NewGuid().ToString();
         }
 
@@ -33,7 +35,6 @@ namespace BlehMUD.Core
             try
             {
                 _stream = _client.GetStream();
-                _player = new Player();
                 byte[] buffer = new byte[1024];
                 string receivedData = string.Empty;
 
@@ -63,9 +64,9 @@ namespace BlehMUD.Core
                             break;
                         }
 
-                        if (command.ToLower() == "west")
+                        if (CommandType.IsTypeDirection(command))
                         {
-
+                            await SendToClientAsync(MovePlayer(_player, command) + "\r\n");
                         }
                         string response = _parser.ParseAndExecute(command);
                         await SendToClientAsync(response);
@@ -87,7 +88,6 @@ namespace BlehMUD.Core
 
         public async Task SendWelcomeMsg()
         {
-            //string welcomeMsg = "========================================================================================================================\r\n";   
             await SendToClientAsync(TextHelpers.ColourizeText(CoreConstants.INITPROMPT) + "\r\n");
             
         }
@@ -114,6 +114,16 @@ namespace BlehMUD.Core
         private string ProcessInput(string input)
         {
             return $"You typed: {input}";
+        }
+        public string MovePlayer(Player player, string direction)
+        {
+            if (player.CurrentRoom.Exits.TryGetValue(direction.ToLower(), out Room newRoom))
+            {
+                player.CurrentRoom = newRoom;
+                return player.CurrentRoom.Description;
+            }
+
+            return "You cannot go that way!";
         }
     }
 }

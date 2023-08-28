@@ -49,18 +49,22 @@ public class MudServer
         while(true)
         {
             TcpClient client = await _listener.AcceptTcpClientAsync();
+            Player newPlayer = new() {
+                Client = client,
+                CurrentRoom = _roomManager.GetRoomByName("Room 1")
+            };
             Console.WriteLine($"Client connected: {client.Client.RemoteEndPoint}");
-            ClientHandler clientHandler = new(client, _parser);
+
+            ClientHandler clientHandler = new(client, _parser, newPlayer);
+
             string clientHost = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
+
             if(!_clientsByHost.ContainsKey(clientHost))
             {
                 _clientsByHost.Add(clientHost, new List<ClientHandler>());
             }
             _clientsByHost[clientHost].Add(clientHandler);
-            _players.Add(new Player
-            {
-                Client = client
-            });
+            _players.Add(newPlayer);
             await clientHandler.HandleClientAsync();
         }
     }
@@ -97,6 +101,7 @@ public class MudServer
 
     public void SetupRooms()
     {
+        Console.WriteLine("Setting up rooms!");
         Room room1 = new("Room 1", "Room 1 description");
         Room room2 = new("Room 2", "Room 2 description");
         Room room3 = new("Room 3", "Room 3 description");
@@ -109,15 +114,5 @@ public class MudServer
         _roomManager.AddRoom(room1);
         _roomManager.AddRoom(room2);
         _roomManager.AddRoom(room3);
-    }
-
-    public string MovePlayer(Player player, string direction) {
-        if(player.CurrentRoom.Exits.TryGetValue(direction.ToLower(), out Room newRoom))
-        {
-            player.CurrentRoom = newRoom;
-            return player.CurrentRoom.Description;
-        }
-
-        return "You cannot go that way!\r\n";
     }
 }
