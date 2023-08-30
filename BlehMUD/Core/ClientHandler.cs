@@ -64,11 +64,7 @@ namespace BlehMUD.Core
                             break;
                         }
 
-                        if (CommandType.IsTypeDirection(command))
-                        {
-                            await SendToClientAsync(MovePlayer(_player, command) + "\r\n");
-                        }
-                        string response = _parser.ParseAndExecute(command);
+                        string response = _parser.ParseAndExecute(command, _player) + "\r\n";
                         await SendToClientAsync(response);
                         await SendPrompt();
                         receivedData = string.Empty;
@@ -114,16 +110,6 @@ namespace BlehMUD.Core
         private string ProcessInput(string input)
         {
             return $"You typed: {input}";
-        }
-        public string MovePlayer(Player player, string direction)
-        {
-            if (player.CurrentRoom.Exits.TryGetValue(direction.ToLower(), out Room newRoom))
-            {
-                player.CurrentRoom = newRoom;
-                return player.CurrentRoom.Description;
-            }
-
-            return "You cannot go that way!";
         }
     }
 }

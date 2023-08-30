@@ -1,4 +1,5 @@
 ﻿using BlehMUD.Interfaces;
+using BlehMUD.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace BlehMUD.Commands
             Console.WriteLine($"Registering {GetType().Name}");
         }
 
-        public string Execute(string[] args )
+        public string Execute(Player player, string[] args )
         {
             return "Disconnected from server.";
         }

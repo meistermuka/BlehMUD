@@ -11,8 +11,8 @@ namespace BlehMUD;
 public class MudServer
 {
     private TcpListener _listener;
-    private readonly CommandParser _parser;
     private readonly TickSystem _tickSystem;
+    private CommandParser _parser;
     private RoomManager _roomManager;
 
     private readonly List<Player> _players = new List<Player>();
@@ -23,8 +23,8 @@ public class MudServer
     public MudServer(IPAddress address, int port, CommandParser parser)
     {
         _listener = new TcpListener(address, port);
-        _parser = parser;
         _roomManager = new RoomManager();
+        _parser = parser;
         SetupRooms();
         _tickSystem = new TickSystem(tickIntervalMilliseconds: CoreConstants.TICKINTERVALMS);
         _tickSystem.Tick += OnTick;

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Numerics;
+using BlehMUD.Entities;
 
 namespace BlehMUD
 {
@@ -19,11 +20,17 @@ namespace BlehMUD
             {
                 {"look", new LookCommand() },
                 {"l", new LookCommand() },
-                {"quit", new QuitCommand() }
+                {"quit", new QuitCommand() },
+                {"north", new MoveCommand() },
+                {"south", new MoveCommand() },
+                {"west", new MoveCommand() },
+                {"east", new MoveCommand() },
+                {"up", new MoveCommand() },
+                {"down", new MoveCommand() }
             };
         }
 
-        public string ParseAndExecute(string input)
+        public string ParseAndExecute(string input, Player player)
         {
             try
             {
@@ -31,18 +38,20 @@ namespace BlehMUD
                 {
                     string[] parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                     string commandName = parts[0].ToLower();
+                    string[] args = { "" };
 
                     if (_commands.TryGetValue(commandName, out ICommand command))
                     {
-                        string[] args = parts.Skip(1).ToArray();
-                        return command.Execute(args);
-                    }
-
-                    List<string> suggestions = GetCommandSuggestions(commandName);
-                    if (suggestions.Count > 0)
-                    {
-                        string suggestionText = string.Join(", ", suggestions);
-                        return $"Command not recognized. Did you mean: {suggestionText}?\r\n";
+                        if (CommandType.IsTypeDirection(commandName))
+                        {
+                            args[0] = commandName;
+                        }
+                        else
+                        {
+                            args = parts.Skip(1).ToArray();
+                        }
+                        
+                        return command.Execute(player, args);
                     }
 
                     return "Command not recognized.\r\n";
