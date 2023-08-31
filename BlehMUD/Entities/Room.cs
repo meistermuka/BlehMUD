@@ -8,6 +8,7 @@ namespace BlehMUD.Entities
 {
     public class Room
     {
+        public string RoomId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public Dictionary<string, Room> Exits { get; } = new Dictionary<string, Room>();
@@ -15,7 +16,25 @@ namespace BlehMUD.Entities
         public List<Player> Players { get; } = new List<Player>();
         public List<object> GenericEntities { get; } = new List<object>();
 
-        public Room(string name, string description) {
+        /*
+         * {
+              "room_id": "HELB001",
+              "name": "Town Square",
+              "description": "Near the town center",
+              "exits": 
+              {
+                "north": null,
+                "south": "HELB004",
+                "east": "HELB002",
+                "west": null,
+                "up": null,
+                "down": null
+              }
+            }
+         */
+
+        public Room(string roomId, string name, string description) {
+            RoomId = roomId;
             Name = name;
             Description = description;
         }

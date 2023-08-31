@@ -1,0 +1,131 @@
+{
+  "area_name": "Helb Town",
+  "rooms": [
+    {
+      "room_id": "HELB001",
+      "name": "Town Square",
+      "description": "Near the town center",
+      "exits": 
+      {
+        "north": null,
+        "south": "HELB004",
+        "east": "HELB002",
+        "west": null,
+        "up": null,
+        "down": null
+      }
+    },
+    {
+      "room_id": "HELB002",
+      "name": "Town Square",
+      "description": "Near the town center",
+      "exits":
+      {
+        "north": null,
+        "south": "HELB005",
+        "east": "HELB003",
+        "west": "HELB001",
+        "up": null,
+        "down": null
+      }
+    },
+    {
+      "room_id": "HELB003",
+      "name": "Town Square",
+      "description": "Near the town center",
+      "exits":
+      {
+        "north": null,
+        "south": "HELB006",
+        "east": null,
+        "west": "HELB001",
+        "up": null,
+        "down": null
+      }
+    },
+    {
+      "room_id": "HELB004",
+      "name": "Town Square",
+      "description": "Near the town center",
+      "exits":
+      {
+        "north": "HELB001",
+        "south": "HELB007",
+        "east": "HELB005",
+        "west": null,
+        "up": null,
+        "down": null
+      }
+    },
+    {
+      "room_id": "HELB005",
+      "name": "Town Center",
+      "description": "A large fountain with an elaborate sculpture set on a wide base made of jet black granite.",
+      "exits":
+      {
+        "north": "HELB002",
+        "south": "HELB008",
+        "east": "HELB006",
+        "west": "HELB004",
+        "up": null,
+        "down": null
+      }
+    },
+    {
+      "room_id": "HELB006",
+      "name": "Town Square",
+      "description": "Near the town center",
+      "exits":
+      {
+        "north": "HELB003",
+        "south": "HELB009",
+        "east": null,
+        "west": "HELB005",
+        "up": null,
+        "down": null
+      }
+    },
+    {
+      "room_id": "HELB007",
+      "name": "Town Square",
+      "description": "Near the town center",
+      "exits":
+      {
+        "north": "HELB004",
+        "south": null,
+        "east": "HELB008",
+        "west": null,
+        "up": null,
+        "down": null
+      }
+    },
+    {
+      "room_id": "HELB008",
+      "name": "Town Square",
+      "description": "Near the town center",
+      "exits":
+      {
+        "north": "HELB005",
+        "south": null,
+        "east": "HELB009",
+        "west": "HELB007",
+        "up": null,
+        "down": null
+      }
+    },
+    {
+      "room_id": "HELB009",
+      "name": "Town Square",
+      "description": "Near the town center",
+      "exits":
+      {
+        "north": "HELB006",
+        "south": null,
+        "east": null,
+        "west": "HELB008",
+        "up": null,
+        "down": null
+      }
+    }
+  ]
+}

@@ -15,6 +15,7 @@ public class MudServer
     private CommandParser _parser;
     private RoomManager _roomManager;
     private EventSystem _eventSystem;
+    private AreaLoader _areaLoader;
 
     private readonly List<Player> _players = new List<Player>();
     private readonly List<NPC> _npcs = new List<NPC>();
@@ -26,8 +27,10 @@ public class MudServer
         _listener = new TcpListener(address, port);
         _roomManager = new RoomManager();
         _eventSystem = new EventSystem();
+        _areaLoader = new AreaLoader();
         _parser = parser;
-        SetupRooms();
+        //SetupRooms();
+        _areaLoader.LoadAreasFromFolder("./Areas");
         SetupNPCs();
         SetupEventHandlers();
         _tickSystem = new TickSystem(tickIntervalMilliseconds: CoreConstants.TICKINTERVALMS);
@@ -82,7 +85,7 @@ public class MudServer
         }
     }
 
-    private void SetupRooms()
+    /*private void SetupRooms()
     {
         Console.WriteLine("Setting up rooms!");
         Room room1 = new("Room 1", "Room 1 description");
@@ -97,7 +100,7 @@ public class MudServer
         _roomManager.AddRoom(room1);
         _roomManager.AddRoom(room2);
         _roomManager.AddRoom(room3);
-    }
+    }*/
 
     private void SetupNPCs()
     {
