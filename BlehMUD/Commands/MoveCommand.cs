@@ -24,7 +24,12 @@ namespace BlehMUD.Commands
         {
             if (player.CurrentRoom.Exits.TryGetValue(direction.ToLower(), out Room newRoom))
             {
-                player.CurrentRoom = newRoom;
+                if(player.CurrentRoom != null)
+                {
+                    player.ExitRoom();
+                }
+                //player.CurrentRoom = newRoom;
+                player.EnterRoom(newRoom);
                 return player.CurrentRoom.Description;
             }
 

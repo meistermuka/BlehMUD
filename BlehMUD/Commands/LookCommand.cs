@@ -16,7 +16,15 @@ namespace BlehMUD.Commands
         }
         public string Execute(Player player, string[] args)
         {
-            return "You look around\r\n";
+            if (args.Length == 0 )
+            {
+                return "You look around\r\n";
+            }
+            else
+            {
+                return "something else";
+            }
+            
         }
     }
 }

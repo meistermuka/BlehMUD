@@ -2,7 +2,7 @@
 {
     public static class CoreConstants
     {
-        public const int TICKINTERVALMS = 5000;
+        public const int TICKINTERVALMS = 60000;
         public const string INITPROMPT = @"
         ========================================================================================================================
         |                                                                                                                      |

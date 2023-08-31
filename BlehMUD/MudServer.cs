@@ -14,6 +14,7 @@ public class MudServer
     private readonly TickSystem _tickSystem;
     private CommandParser _parser;
     private RoomManager _roomManager;
+    private EventSystem _eventSystem;
 
     private readonly List<Player> _players = new List<Player>();
     private readonly List<NPC> _npcs = new List<NPC>();
@@ -24,8 +25,11 @@ public class MudServer
     {
         _listener = new TcpListener(address, port);
         _roomManager = new RoomManager();
+        _eventSystem = new EventSystem();
         _parser = parser;
         SetupRooms();
+        SetupNPCs();
+        SetupEventHandlers();
         _tickSystem = new TickSystem(tickIntervalMilliseconds: CoreConstants.TICKINTERVALMS);
         _tickSystem.Tick += OnTick;
     }
@@ -49,10 +53,8 @@ public class MudServer
         while(true)
         {
             TcpClient client = await _listener.AcceptTcpClientAsync();
-            Player newPlayer = new() {
-                Client = client,
-                CurrentRoom = _roomManager.GetRoomByName("Room 1")
-            };
+            Player newPlayer = new(client, _roomManager.GetRoomByName("Room 1"), 100, "Kronos", _eventSystem);
+
             Console.WriteLine($"Client connected: {client.Client.RemoteEndPoint}");
 
             ClientHandler clientHandler = new(client, _parser, newPlayer);
@@ -80,26 +82,7 @@ public class MudServer
         }
     }
 
-    private Player GetPlayerByClient(TcpClient client)
-    {
-        return _players.FirstOrDefault(player => player.Client == client);
-    }
-
-    private void SendResponseToClient(Player player, string response)
-    {
-        try
-        {
-            byte[] responseBytes = Encoding.ASCII.GetBytes(response);
-            player.Client.GetStream().Write(responseBytes, 0, responseBytes.Length);   
-        } 
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
-        
-    }
-
-    public void SetupRooms()
+    private void SetupRooms()
     {
         Console.WriteLine("Setting up rooms!");
         Room room1 = new("Room 1", "Room 1 description");
@@ -114,5 +97,30 @@ public class MudServer
         _roomManager.AddRoom(room1);
         _roomManager.AddRoom(room2);
         _roomManager.AddRoom(room3);
+    }
+
+    private void SetupNPCs()
+    {
+        Console.WriteLine("Setting up NPCs!");
+        NPC npc1 = new("MOB 1", "A big big mob");
+        NPC npc2 = new("MOB 2", "A small small mob");
+
+        npc1.CurrentRoom = _roomManager.GetRoomByName("Room 1");
+        npc2.CurrentRoom = _roomManager.GetRoomByName("Room 1");
+    }
+
+    private void SetupEventHandlers()
+    {
+        _eventSystem.PlayerEnteredRoom += (player, room) =>
+        {
+            Console.WriteLine($"{player.Name} entered {room.Name}");
+            // Handle room updates or other actions
+        };
+
+        _eventSystem.PlayerExitedRoom += (player, room) =>
+        {
+            Console.WriteLine($"{player.Name} exited {room.Name}.");
+            // Handle room updates or other actions
+        };
     }
 }

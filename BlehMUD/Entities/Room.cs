@@ -12,10 +12,22 @@ namespace BlehMUD.Entities
         public string Description { get; set; }
         public Dictionary<string, Room> Exits { get; } = new Dictionary<string, Room>();
         public List<NPC> NPCs { get; } = new List<NPC>();
+        public List<Player> Players { get; } = new List<Player>();
+        public List<object> GenericEntities { get; } = new List<object>();
 
         public Room(string name, string description) {
             Name = name;
             Description = description;
+        }
+
+        public void AddEntity(object entity)
+        {
+            GenericEntities.Add(entity);
+        }
+
+        public void RemoveEntity(object entity)
+        {
+            GenericEntities.Remove(entity);
         }
 
         public string GetFullDescription()
